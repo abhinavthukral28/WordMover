@@ -68,9 +68,17 @@ function getWordAtLocation(aCanvasX, aCanvasY){
 	  
 	  //note you will have to click near the start of the word
 	  //as it is implemented now
+    var ctx= canvas.getContext("2d");
+    ctx.font = '20pt Arial';
 	  for(var i=0; i<words.length; i++){
-		 if(Math.abs(words[i].x - aCanvasX) < 20 && 
-		    Math.abs(words[i].y - aCanvasY) < 20) return words[i];
+          var txt= words[i];
+          var width = ctx.measureText(txt.word).width
+		// if(Math.abs(words[i].x - aCanvasX) < width &&
+		    if((Math.abs(words[i].y - aCanvasY) < 20) &&
+				(aCanvasX > words[i].x &&
+				aCanvasX < (words[i].x + width))){
+                return words[i];
+            }
 	  }
 	  return null;
     }
