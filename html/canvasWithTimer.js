@@ -42,6 +42,7 @@ var testWords       = [];
 testWords.push({word: "I"});
 testWords.push({word: "like"});
 testWords.push({word: "the"});
+testWords.push({word: "[Cm]"})
 testWords.push({word: "way"});
 testWords.push({word: "your"});
 testWords.push({word: "sparkling"});
@@ -188,7 +189,7 @@ function handleSubmitButton () {
 				console.log("data: " + data);
 				console.log("typeof: " + typeof data);
 				var responseObj = JSON.parse(data);
-				movingString.word = responseObj.text;
+			
 				if(responseObj.wordArray) words = responseObj.wordArray;
 				});
 	}
@@ -213,13 +214,12 @@ $(document).ready(function(){
 function display ()
 {
 	var ctx = canvas.getContext('2d');
+	ctx.font = "20pt Arial";
 	var spaceWidth = ctx.measureText(" ").width;
 	var leftPad = spaceWidth*5;
 	var topPad = 50;
 	var lineSplit = 3;
-	var lastWordObj = {word:""};
-	var lastX = 0;
-	var chordDisplace = 5;
+	var chordDisplace = 10;
 	for (var i = 0; i < testWords.length; i++)
 	{
 		var wordObj = testWords[i];
@@ -231,9 +231,14 @@ function display ()
 			wordObj.y =topPad-chordDisplace;
 		}
 		else wordObj.y = topPad;
-		lastWordObj = wordObj;
-		leftPad = lastWordObj.x +ctx.measureText(lastWordObj.word).width;
+		
+	
+		leftPad = wordObj.x +ctx.measureText(wordObj.word).width;
 		console.log(wordObj);
+		console.log("leftPad: " + leftPad);	
+		console.log("width: " + ctx.measureText(wordObj.word).width );
+		
+		
 	}
 
 }
