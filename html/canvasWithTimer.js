@@ -28,35 +28,90 @@
 
 //Use javascript array of objects to represent words and their locations
 var words = [];
-words.push({word: "I", x:50, y:50});
-words.push({word: "like", x:70, y:50});
-words.push({word: "the", x:120, y:50});
-words.push({word: "way", x:170, y:50});
-words.push({word: "your", x:230, y:50});
-words.push({word: "sparkling", x:300, y:50});
-words.push({word: "earrings", x:430, y:50});
-words.push({word: "lay", x:540, y:50});
+words.push({
+	word: "I",
+	x: 50,
+	y: 50
+});
+words.push({
+	word: "like",
+	x: 70,
+	y: 50
+});
+words.push({
+	word: "the",
+	x: 120,
+	y: 50
+});
+words.push({
+	word: "way",
+	x: 170,
+	y: 50
+});
+words.push({
+	word: "your",
+	x: 230,
+	y: 50
+});
+words.push({
+	word: "sparkling",
+	x: 300,
+	y: 50
+});
+words.push({
+	word: "earrings",
+	x: 430,
+	y: 50
+});
+words.push({
+	word: "lay",
+	x: 540,
+	y: 50
+});
 
 
-var testWords       = [];
-testWords.push({word: "I"});
-testWords.push({word: "like"});
-testWords.push({word: "the"});
-testWords.push({word: "[Cm]"})
-testWords.push({word: "way"});
-testWords.push({word: "your"});
-testWords.push({word: "sparkling"});
-testWords.push({word: "earrings"});
-testWords.push({word: "lay"});
+var testWords = [];
+testWords.push({
+	word: "I"
+});
+testWords.push({
+	word: "like"
+});
+testWords.push({
+	word: "the"
+});
+testWords.push({
+	word: "[Cm]"
+})
+testWords.push({
+	word: "way"
+});
+testWords.push({
+	word: "\n"
+});
+testWords.push({
+	word: "your"
+});
+testWords.push({
+	word: "sparkling"
+});
+testWords.push({
+	word: "earrings"
+});
+testWords.push({
+	word: "lay"
+});
 
 var timer;
 
 var wordBeingMoved;
 
+var movingChord;
+
 var deltaX, deltaY; //location where mouse is pressed
 var canvas = document.getElementById('canvas1'); //our drawing canvas
 
-function getWordAtLocation(aCanvasX, aCanvasY){
+function getWordAtLocation(aCanvasX, aCanvasY) {
 
 	//locate the word near aCanvasX,aCanvasY
 	//Just use crude region for now.
@@ -64,32 +119,32 @@ function getWordAtLocation(aCanvasX, aCanvasY){
 
 	//note you will have to click near the start of the word
 	//as it is implemented now
-	var ctx= canvas.getContext("2d");
+	var ctx = canvas.getContext("2d");
 	ctx.font = '20pt Arial';
-	for(var i=0; i<testWords.length; i++){
-		var txt= testWords[i];
+	for (var i = 0; i < testWords.length; i++) {
+		var txt = testWords[i];
 		var width = ctx.measureText(txt.word).width;
-		if((Math.abs(testWords[i].y - aCanvasY) < 20) &&
-				(aCanvasX > testWords[i].x &&
-				 aCanvasX < (testWords[i].x + width))){
+		if ((Math.abs(testWords[i].y - aCanvasY) < 20) &&
+			(aCanvasX > testWords[i].x &&
+				aCanvasX < (testWords[i].x + width))) {
 			return testWords[i];
 		}
 	}
 	return null;
 }
 
-var drawCanvas = function(){
+var drawCanvas = function() {
 
 	var context = canvas.getContext('2d');
 
 	context.fillStyle = 'white';
-	context.fillRect(0,0,canvas.width,canvas.height); //erase canvas
+	context.fillRect(0, 0, canvas.width, canvas.height); //erase canvas
 
 	context.font = '20pt Arial';
 	context.fillStyle = 'cornflowerblue';
 	context.strokeStyle = 'blue';
 
-	for(var i=0; i<testWords.length; i++){  //note i declared as var
+	for (var i = 0; i < testWords.length; i++) { //note i declared as var
 
 		var data = testWords[i];
 		//console.log(data.word);
@@ -102,7 +157,7 @@ var drawCanvas = function(){
 	context.stroke();
 };
 
-function handleMouseDown(e){
+function handleMouseDown(e) {
 
 	//get mouse location relative to canvas top left
 	var rect = canvas.getBoundingClientRect();
@@ -113,8 +168,10 @@ function handleMouseDown(e){
 	console.log("mouse down:" + canvasX + ", " + canvasY);
 
 	wordBeingMoved = getWordAtLocation(canvasX, canvasY);
+	if (wordBeingMoved.word.startsWith("["))
+		movingChord = true;
 	//console.log(wordBeingMoved.word);
-	if(wordBeingMoved != null ){
+	if (wordBeingMoved != null) {
 		deltaX = wordBeingMoved.x - canvasX;
 		deltaY = wordBeingMoved.y - canvasY;
 		//document.addEventListener("mousemove", handleMouseMove, true);
@@ -133,7 +190,7 @@ function handleMouseDown(e){
 	drawCanvas();
 }
 
-function handleMouseMove(e){
+function handleMouseMove(e) {
 
 	console.log("mouse move");
 
@@ -145,14 +202,32 @@ function handleMouseMove(e){
 	wordBeingMoved.x = canvasX + deltaX;
 	wordBeingMoved.y = canvasY + deltaY;
 
+	if (!movingChord) {
+		if (wordBeingMoved.y <= 50) {
+			wordBeingMoved.y = 50;
+		}
+		else
+			wordBeingMoved.y = Math.floor(wordBeingMoved.y / 50) * 50;
+	}
+	else {
+		if (wordBeingMoved.y <= 80) {
+			wordBeingMoved.y = 30;
+		}
+		else
+			wordBeingMoved.y = Math.floor(wordBeingMoved.y / 80) * 80;
+	}
+
+
 	e.stopPropagation();
 
 	drawCanvas();
 }
 
-function handleMouseUp(e){
+function handleMouseUp(e) {
 	console.log("mouse up");
-
+	movingChord = false;
+	testWords.sort(compareWords);
+	console.log(testWords);
 	e.stopPropagation();
 
 	//remove mouse move and mouse up handlers but leave mouse down handler
@@ -162,13 +237,30 @@ function handleMouseUp(e){
 	drawCanvas(); //redraw the canvas
 }
 
+
+
+function compareWords(a, b) {
+	if (a.y < b.y)
+		return -1;
+	else if (a.y == b.y) {
+		if (a.x < b.x) {
+			return -1;
+		}
+		else if (a.x == b.x) {
+			return 0;
+		}
+		else return 1;
+	}
+	else return 1;
+}
+
 //JQuery Ready function -called when HTML has been parsed and DOM
 //created
 //can also be just $(function(){...});
 //much JQuery code will go in here because the DOM will have been loaded by the time
 //this runs
 
-function handleTimer(){
+function handleTimer() {
 
 	drawCanvas()
 }
@@ -176,72 +268,72 @@ function handleTimer(){
 
 
 
-function handleSubmitButton () {
+function handleSubmitButton() {
 
 	var userText = $('#userTextField').val(); //get text from user text input field
-	if(userText && userText != ''){
-		var userRequestObj = {text: userText};
+	if (userText && userText != '') {
+		var userRequestObj = {
+			text: userText
+		};
 		var userRequestJSON = JSON.stringify(userRequestObj);
 		$('#userTextField').val(''); //clear the user text field
 
 		//alert ("You typed: " + userText);
-		$.post("userText", userRequestJSON, function(data, status){
-				console.log("data: " + data);
-				console.log("typeof: " + typeof data);
-				var responseObj = JSON.parse(data);
-			
-				if(responseObj.wordArray) words = responseObj.wordArray;
-				});
+		$.post("userText", userRequestJSON, function(data, status) {
+			console.log("data: " + data);
+			console.log("typeof: " + typeof data);
+			var responseObj = JSON.parse(data);
+
+			if (responseObj.wordArray) words = responseObj.wordArray;
+		});
 	}
 
 }
 
 
-$(document).ready(function(){
-		//This is called after the broswer has loaded the web page
-		display();
-		//add mouse down listener to our canvas object
-		$("#canvas1").mousedown(handleMouseDown);
+$(document).ready(function() {
+	//This is called after the broswer has loaded the web page
+	display();
+	//add mouse down listener to our canvas object
+	$("#canvas1").mousedown(handleMouseDown);
 
 
 
-		timer = setInterval(handleTimer, 100);
-		//timer.clearInterval(); //to stop
+	timer = setInterval(handleTimer, 100);
+	//timer.clearInterval(); //to stop
 
-		drawCanvas();
-		});
+	drawCanvas();
+});
 
-function display ()
-{
+function display() {
 	var ctx = canvas.getContext('2d');
 	ctx.font = "20pt Arial";
 	var spaceWidth = ctx.measureText(" ").width;
-	var leftPad = spaceWidth*5;
+	var leftPad = spaceWidth * 5;
 	var topPad = 50;
-	var lineSplit = 3;
-	var chordDisplace = 10;
-	for (var i = 0; i < testWords.length; i++)
-	{
+	var lineSplit = 50;
+	var chordDisplace = 20;
+	for (var i = 0; i < testWords.length; i++) {
 		var wordObj = testWords[i];
-		if (wordObj.word == "\n")
+		if (wordObj.word == "\n") {
 			topPad += lineSplit;
-		wordObj.x =  leftPad + spaceWidth;
-		if (wordObj.word.startsWith("["))
-		{
-			wordObj.y =topPad-chordDisplace;
+			leftPad = spaceWidth * 4;
+
+		}
+		wordObj.x = leftPad + spaceWidth;
+		if (wordObj.word.startsWith("[")) {
+			wordObj.y = topPad - chordDisplace;
 		}
 		else wordObj.y = topPad;
-		
-	
-		leftPad = wordObj.x +ctx.measureText(wordObj.word).width;
+
+		if (wordObj.word != "\n")
+			leftPad = wordObj.x + ctx.measureText(wordObj.word).width;
+		else leftPad = wordObj.x;
 		console.log(wordObj);
-		console.log("leftPad: " + leftPad);	
-		console.log("width: " + ctx.measureText(wordObj.word).width );
-		
-		
+		console.log("leftPad: " + leftPad);
+		console.log("width: " + ctx.measureText(wordObj.word).width);
+
+
 	}
 
 }
-
-
-
