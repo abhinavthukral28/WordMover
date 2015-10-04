@@ -87,9 +87,13 @@ var parseSong = function (title) {
     var openIndex;
     var closeIndex;
 
-    for (var i = 0; i < content.length;i++)
+    for (var i = 1; i < content.length;i++)
     {
         var line = content[i];
+        line.trim();
+        if(line.length <= 1){
+            continue;
+        }
         var tempsongWords = line.split(" ");
         tempsongWords.push("\n");
         for(var word in tempsongWords){
