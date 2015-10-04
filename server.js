@@ -75,7 +75,31 @@ var songs = {
 var http = require('http'); //need to http
 var fs = require('fs'); //need to read static files
 var url = require('url');  //to parse url strings
+var path = require("path");
+var resourcesDir = path.resolve(__dirname,"songs/");
 
+
+var parseSong = function (title) {
+    var content = fs.readFileSync(resourcesDir+"/" + "test" + ".crd", "utf8").toString().split("\n");
+    var songWords = [];
+
+
+    var openIndex;
+    var closeIndex;
+
+    for (var i = 0; i < content.length;i++)
+    {
+        var line = content[i];
+        var tempsongWords = line.split(" ");
+        tempsongWords.push("\n");
+        for(var word in tempsongWords){
+            songWords.push(tempsongWords[word]);
+        }
+    }
+    console.log(songWords);
+    return songWords;
+
+};
 
 
 
@@ -173,7 +197,7 @@ http.createServer(function (request, response) {
         });
     }
 
-
+parseSong("null");
 }).listen(process.env.PORT,process.env.IP);
 
 //console.log('Server Running at http://127.0.0.1:3000  CNTL-C to quit');
