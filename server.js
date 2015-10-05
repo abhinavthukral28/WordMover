@@ -1,73 +1,39 @@
-/*
- Here we are prepared to receive a POST message from the client,
- and acknowledge that, with a very limited response back to the client
- */
-
-/*
- Use browser to view pages at http://localhost:3000/canvasWithTimer.html
-
- When the blue cube is moved with the arrow keys, a POST message will be
- sent to the server when the arrow key is released. The POST message will
- contain a data string which is the location of the blue cube when the
- arrow key was released. The server sends back a JSON string which the client should use
- to put down a "waypoint" for where the arrow key was released
-
- Also if the client types in the app text field and presses the "Submit Request" button
- a JSON object containing the text field text will be send to this
- server in a POST message.
-
- Notice in this code we attach an event listener to the request object
- to receive data that might come in in chunks. When the request end event
- is posted we look and see if it is a POST message and if so extract the
- data and process it.
-
-
- */
-
-//Cntl+C to stop server (in Windows CMD console)
-
-//DATA to be used in a future tutorial exercise.
-/*Exercise: if the user types the title of a song that the server has,
- the server should send a JSON object back to the client to replace
- the words array in the client app.
- */
-
-//hard coded songs to serve client 
-
 var songs = {
     "Peaceful Easy Feeling": "Peaceful Easy Feeling",
     "Sister Golden Hair": "Sister Golden Hair",
-    "Brown Eyed Girl":"Brown Eyed Girl"
+    "Brown Eyed Girl": "Brown Eyed Girl"
 };
 
 
 //Server Code
 var http = require('http'); //need to http
 var fs = require('fs'); //need to read static files
-var url = require('url');  //to parse url strings
+var url = require('url'); //to parse url strings
 var path = require("path");
-var resourcesDir = path.resolve(__dirname,"songs/");
+var resourcesDir = path.resolve(__dirname, "songs/");
 
+function replaceAll(find, replace, str) {
+    return str.replace(new RegExp(find, 'g'), replace);
+}
 
-var parseSong = function (title) {
-    var content = fs.readFileSync(resourcesDir+"/" + title + ".txt", "utf8").toString().split("\n");
+var parseSong = function(title) {
+    console.log(title);
+    var content = fs.readFileSync(resourcesDir + "/" + title + ".txt", "utf8").toString().split("\n");
     var songWords = [];
 
-
-    var openIndex;
-    var closeIndex;
-
-    for (var i = 1; i < content.length;i++)
-    {
+    for (var i = 0; i < content.length; i++) {
         var line = content[i];
-        line.trim();
-        if(line.length <= 1){
+        line = replaceAll("\\]", "] ", replaceAll("\\[", " [", line)).trim();
+
+        if (line.length <= 1) {
             continue;
         }
         var tempsongWords = line.split(" ");
         tempsongWords.push("\n");
-        for(var word in tempsongWords){
-            songWords.push(tempsongWords[word]);
+        for (var word in tempsongWords) {
+            songWords.push({
+                word: tempsongWords[word]
+            });
         }
     }
     console.log(songWords);
@@ -76,6 +42,17 @@ var parseSong = function (title) {
 };
 
 
+var saveSongFile = function(title, saveArray) {
+    console.log(title);
+    var fileData = ""; 
+    
+    for(var i = 0; i < saveArray.length; i++){
+        fileData += saveArray[i].word + " ";
+    }
+    
+    fs.writeFileSync(resourcesDir + "/" + title + ".txt", fileData, "utf8");
+
+};
 
 var ROOT_DIR = 'html'; //dir to serve static files from
 
@@ -93,7 +70,7 @@ var MIME_TYPES = {
     'txt': 'text/text'
 };
 
-var get_mime = function (filename) {
+var get_mime = function(filename) {
     var ext, type;
     for (ext in MIME_TYPES) {
         type = MIME_TYPES[ext];
@@ -104,7 +81,7 @@ var get_mime = function (filename) {
     return MIME_TYPES['txt'];
 };
 
-http.createServer(function (request, response) {
+http.createServer(function(request, response) {
     var urlObj = url.parse(request.url, true, false);
     console.log('\n============================');
     console.log("PATHNAME: " + urlObj.pathname);
@@ -114,12 +91,12 @@ http.createServer(function (request, response) {
     var receivedData = '';
 
     //attached event handlers to collect the message data
-    request.on('data', function (chunk) {
+    request.on('data', function(chunk) {
         receivedData += chunk;
     });
 
     //event handler for the end of the message
-    request.on('end', function () {
+    request.on('end', function() {
         console.log('received data: ', receivedData);
         console.log('type: ', typeof receivedData);
 
@@ -129,25 +106,25 @@ http.createServer(function (request, response) {
             console.log('received data object: ', dataObj);
             console.log('type: ', typeof dataObj);
             var returnObj = {}
-            if (songs.hasOwnProperty(dataObj.text)) {
-                returnObj.wordArray = parseSong(songs[dataObj.text]);
-                returnObj.text = "FOUND"
+            if (dataObj.type == "getSong") {
+                if (songs.hasOwnProperty(dataObj.text)) {
+                    returnObj.wordArray = parseSong(songs[dataObj.text]);
+                    returnObj.text = "FOUND"
+                }
+                else {
+                    returnObj.text = "NOT FOUND"
+                }
             }
-            else{
-                returnObj.text = "NOT FOUND"
+            if (dataObj.type == "saveSong") {
+                console.log(dataObj.text);
+                saveSongFile(dataObj.song, dataObj.text);
+                console.log(dataObj.text);
+                returnObj.text = "File Received";
             }
-            //Here we can decide how to process the data object and what
-            //object to send back to client.
-            //FOR NOW EITHER JUST PASS BACK AN OBJECT
-            //WITH "text" PROPERTY
 
-            //TO DO: return the words array that the client requested
-            //if it exists
-
-
-
-            //object to return to client
-            response.writeHead(200, {'Content-Type': MIME_TYPES["text"]});  //does not work with application/json MIME
+            response.writeHead(200, {
+                'Content-Type': MIME_TYPES["text"]
+            }); //does not work with application/json MIME
             response.end(JSON.stringify(returnObj)); //send just the JSON object
         }
     });
@@ -157,7 +134,7 @@ http.createServer(function (request, response) {
         var filePath = ROOT_DIR + urlObj.pathname;
         if (urlObj.pathname === '/') filePath = ROOT_DIR + '/index.html';
 
-        fs.readFile(filePath, function (err, data) {
+        fs.readFile(filePath, function(err, data) {
             if (err) {
                 //report error to console
                 console.log('ERROR: ' + JSON.stringify(err));
@@ -166,12 +143,13 @@ http.createServer(function (request, response) {
                 response.end(JSON.stringify(err));
                 return;
             }
-            response.writeHead(200, {'Content-Type': get_mime(filePath)});
+            response.writeHead(200, {
+                'Content-Type': get_mime(filePath)
+            });
             response.end(data);
         });
     }
 
-parseSong("null");
-}).listen(process.env.PORT,process.env.IP);
+}).listen(process.env.PORT, process.env.IP);
 
 //console.log('Server Running at http://127.0.0.1:3000  CNTL-C to quit');

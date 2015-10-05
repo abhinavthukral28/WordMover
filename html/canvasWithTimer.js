@@ -27,47 +27,47 @@
  */
 
 //Use javascript array of objects to represent words and their locations
-var words = [];
-words.push({
-	word: "I",
-	x: 50,
-	y: 50
-});
-words.push({
-	word: "like",
-	x: 70,
-	y: 50
-});
-words.push({
-	word: "the",
-	x: 120,
-	y: 50
-});
-words.push({
-	word: "way",
-	x: 170,
-	y: 50
-});
-words.push({
-	word: "your",
-	x: 230,
-	y: 50
-});
-words.push({
-	word: "sparkling",
-	x: 300,
-	y: 50
-});
-words.push({
-	word: "earrings",
-	x: 430,
-	y: 50
-});
-words.push({
-	word: "lay",
-	x: 540,
-	y: 50
-});
+// var words = [];
+// words.push({
+// 	word: "I",
+// 	x: 50,
+// 	y: 50
+// });
+// words.push({
+// 	word: "like",
+// 	x: 70,
+// 	y: 50
+// });
+// words.push({
+// 	word: "the",
+// 	x: 120,
+// 	y: 50
+// });
+// words.push({
+// 	word: "way",
+// 	x: 170,
+// 	y: 50
+// });
+// words.push({
+// 	word: "your",
+// 	x: 230,
+// 	y: 50
+// });
+// words.push({
+// 	word: "sparkling",
+// 	x: 300,
+// 	y: 50
+// });
+// words.push({
+// 	word: "earrings",
+// 	x: 430,
+// 	y: 50
+// });
+// words.push({
+// 	word: "lay",
+// 	x: 540,
+// 	y: 50
+// });
 
 
 var testWords = [];
@@ -105,6 +105,8 @@ testWords.push({
 var timer;
 
 var wordBeingMoved;
+
+var song = "Peaceful Easy Feeling";
 
 var movingChord;
 
@@ -148,9 +150,17 @@ var drawCanvas = function() {
 
 		var data = testWords[i];
 		//console.log(data.word);
+		// if (data.word.startsWith("["))
+		// {
+				
+		// context.fillText(data.word, data.x, data.y-20);
+		// context.strokeText(data.word, data.x, data.y-20);
+
+		// }
+		// else{
 		context.fillText(data.word, data.x, data.y);
 		context.strokeText(data.word, data.x, data.y);
-
+	//	}
 	}
 
 
@@ -168,10 +178,11 @@ function handleMouseDown(e) {
 	console.log("mouse down:" + canvasX + ", " + canvasY);
 
 	wordBeingMoved = getWordAtLocation(canvasX, canvasY);
-	if (wordBeingMoved.word.startsWith("["))
-		movingChord = true;
+
 	//console.log(wordBeingMoved.word);
 	if (wordBeingMoved != null) {
+		if (wordBeingMoved.word.startsWith("["))
+			movingChord = true;
 		deltaX = wordBeingMoved.x - canvasX;
 		deltaY = wordBeingMoved.y - canvasY;
 		//document.addEventListener("mousemove", handleMouseMove, true);
@@ -202,20 +213,14 @@ function handleMouseMove(e) {
 	wordBeingMoved.x = canvasX + deltaX;
 	wordBeingMoved.y = canvasY + deltaY;
 
-	if (!movingChord) {
 		if (wordBeingMoved.y <= 50) {
 			wordBeingMoved.y = 50;
 		}
 		else
 			wordBeingMoved.y = Math.floor(wordBeingMoved.y / 50) * 50;
-	}
-	else {
-		if (wordBeingMoved.y <= 80) {
-			wordBeingMoved.y = 30;
-		}
-		else
-			wordBeingMoved.y = Math.floor(wordBeingMoved.y / 80) * 80;
-	}
+	
+	if (movingChord)
+		wordBeingMoved.y -= 20;
 
 
 	e.stopPropagation();
@@ -226,10 +231,10 @@ function handleMouseMove(e) {
 function handleMouseUp(e) {
 	console.log("mouse up");
 	movingChord = false;
-	testWords.sort(compareWords);
 	console.log(testWords);
 	e.stopPropagation();
-
+	testWords.sort(compareWords);
+	console.log(testWords);
 	//remove mouse move and mouse up handlers but leave mouse down handler
 	$("#canvas1").off("mousemove", handleMouseMove); //remove mouse move handler
 	$("#canvas1").off("mouseup", handleMouseUp); //remove mouse up handler
@@ -240,18 +245,24 @@ function handleMouseUp(e) {
 
 
 function compareWords(a, b) {
-	if (a.y < b.y)
-		return -1;
-	else if (a.y == b.y) {
-		if (a.x < b.x) {
-			return -1;
-		}
-		else if (a.x == b.x) {
-			return 0;
-		}
-		else return 1;
+  var ay = a.word.startsWith("[") ? a.y+20 : a.y;
+  var by = b.word.startsWith("[") ? b.y+20 : b.y;
+  if (ay < by){
+  	return -1;
+  }
+  else if (ay == by){
+  	if (a.x < b.x)
+  		return -1;
+	else if (a.x == b.x)
+	{
+		return 0;
 	}
-	else return 1;
+	return 1;
+  }
+  else if (ay > by)
+  {
+  	return 1;
+  }
 }
 
 //JQuery Ready function -called when HTML has been parsed and DOM
@@ -273,18 +284,23 @@ function handleSubmitButton() {
 	var userText = $('#userTextField').val(); //get text from user text input field
 	if (userText && userText != '') {
 		var userRequestObj = {
-			text: userText
+			text: userText,
+			type: "getSong"
 		};
 		var userRequestJSON = JSON.stringify(userRequestObj);
 		$('#userTextField').val(''); //clear the user text field
 
 		//alert ("You typed: " + userText);
-		$.post("userText", userRequestJSON, function(data, status) {
+		$.post("/", userRequestJSON, function(data, status) {
 			console.log("data: " + data);
 			console.log("typeof: " + typeof data);
 			var responseObj = JSON.parse(data);
-
-			if (responseObj.wordArray) words = responseObj.wordArray;
+			console.log(responseObj.wordArray);
+			if (responseObj.wordArray) testWords = responseObj.wordArray;
+			display();
+			drawCanvas();
+			song = userText;
+			console.log(song);
 		});
 	}
 
@@ -309,23 +325,24 @@ function display() {
 	var ctx = canvas.getContext('2d');
 	ctx.font = "20pt Arial";
 	var spaceWidth = ctx.measureText(" ").width;
-	var leftPad = spaceWidth * 5;
+	var leftPad = spaceWidth * 1;
 	var topPad = 50;
 	var lineSplit = 50;
 	var chordDisplace = 20;
 	for (var i = 0; i < testWords.length; i++) {
 		var wordObj = testWords[i];
 		if (wordObj.word == "\n") {
+			
 			topPad += lineSplit;
-			leftPad = spaceWidth * 4;
-
+			leftPad = 0;
+//continue;
 		}
 		wordObj.x = leftPad + spaceWidth;
 		if (wordObj.word.startsWith("[")) {
 			wordObj.y = topPad - chordDisplace;
 		}
 		else wordObj.y = topPad;
-
+	 
 		if (wordObj.word != "\n")
 			leftPad = wordObj.x + ctx.measureText(wordObj.word).width;
 		else leftPad = wordObj.x;
@@ -336,4 +353,19 @@ function display() {
 
 	}
 
+}
+
+
+function handleSave()
+{
+	
+	var userRequestObj = {
+			text: testWords,
+			type: "saveSong",
+			song: song
+		};
+		console.log(testWords);
+	$.post("/", JSON.stringify(userRequestObj), function(data, status) {
+		
+	});
 }
