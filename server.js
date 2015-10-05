@@ -33,41 +33,11 @@
  */
 
 //hard coded songs to serve client 
-var peacefulEasyFeeling = [];
-peacefulEasyFeeling.push({word: "I", x: 50, y: 50});
-peacefulEasyFeeling.push({word: "like", x: 70, y: 50});
-peacefulEasyFeeling.push({word: "the", x: 120, y: 50});
-peacefulEasyFeeling.push({word: "way", x: 170, y: 50});
-peacefulEasyFeeling.push({word: "your", x: 230, y: 50});
-peacefulEasyFeeling.push({word: "sparkling", x: 300, y: 50});
-peacefulEasyFeeling.push({word: "earrings", x: 430, y: 50});
-peacefulEasyFeeling.push({word: "lay", x: 540, y: 50});
-
-var sisterGoldenHair = [];
-sisterGoldenHair.push({word: "Well", x: 50, y: 50});
-sisterGoldenHair.push({word: "I", x: 110, y: 50});
-sisterGoldenHair.push({word: "tried", x: 130, y: 50});
-sisterGoldenHair.push({word: "to", x: 190, y: 50});
-sisterGoldenHair.push({word: "make", x: 220, y: 50});
-sisterGoldenHair.push({word: "it", x: 290, y: 50});
-sisterGoldenHair.push({word: "Sunday", x: 320, y: 50});
-
-var brownEyedGirl = [];
-brownEyedGirl.push({word: "Hey", x: 40, y: 50});
-brownEyedGirl.push({word: "where", x: 100, y: 50});
-brownEyedGirl.push({word: "did", x: 180, y: 50});
-brownEyedGirl.push({word: "we", x: 220, y: 50});
-brownEyedGirl.push({word: "go", x: 260, y: 50});
-brownEyedGirl.push({word: "Days", x: 40, y: 100});
-brownEyedGirl.push({word: "when", x: 110, y: 100});
-brownEyedGirl.push({word: "the", x: 190, y: 100});
-brownEyedGirl.push({word: "rains", x: 240, y: 100});
-brownEyedGirl.push({word: "came", x: 320, y: 100});
 
 var songs = {
-    "Peaceful Easy Feeling": peacefulEasyFeeling,
-    "Sister Golden Hair": sisterGoldenHair,
-    "Brown Eyed Girl": brownEyedGirl
+    "Peaceful Easy Feeling": "Peaceful Easy Feeling",
+    "Sister Golden Hair": "Sister Golden Hair",
+    "Brown Eyed Girl":"Brown Eyed Girl"
 };
 
 
@@ -80,7 +50,7 @@ var resourcesDir = path.resolve(__dirname,"songs/");
 
 
 var parseSong = function (title) {
-    var content = fs.readFileSync(resourcesDir+"/" + "test" + ".crd", "utf8").toString().split("\n");
+    var content = fs.readFileSync(resourcesDir+"/" + title + ".txt", "utf8").toString().split("\n");
     var songWords = [];
 
 
@@ -160,7 +130,7 @@ http.createServer(function (request, response) {
             console.log('type: ', typeof dataObj);
             var returnObj = {}
             if (songs.hasOwnProperty(dataObj.text)) {
-                returnObj.wordArray = songs[dataObj.text];
+                returnObj.wordArray = parseSong(songs[dataObj.text]);
                 returnObj.text = "FOUND"
             }
             else{
