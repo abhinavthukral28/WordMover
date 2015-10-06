@@ -71,37 +71,6 @@
 
 
 var testWords = [];
-testWords.push({
-	word: "I"
-});
-testWords.push({
-	word: "like"
-});
-testWords.push({
-	word: "the"
-});
-testWords.push({
-	word: "[Cm]"
-})
-testWords.push({
-	word: "way"
-});
-testWords.push({
-	word: "\n"
-});
-testWords.push({
-	word: "your"
-});
-testWords.push({
-	word: "sparkling"
-});
-testWords.push({
-	word: "earrings"
-});
-testWords.push({
-	word: "lay"
-});
-
 var timer;
 
 var wordBeingMoved;
@@ -295,12 +264,18 @@ function handleSubmitButton() {
 			console.log("data: " + data);
 			console.log("typeof: " + typeof data);
 			var responseObj = JSON.parse(data);
-			console.log(responseObj.wordArray);
-			if (responseObj.wordArray) testWords = responseObj.wordArray;
-			display();
-			drawCanvas();
-			song = userText;
-			console.log(song);
+			if(responseObj.text === "NOT FOUND"){
+				alert("File Not Found");
+				testWords = null;
+			}
+			else {
+				console.log(responseObj.wordArray);
+				if (responseObj.wordArray) testWords = responseObj.wordArray;
+				display();
+				drawCanvas();
+				song = userText;
+				console.log(song);
+			}
 		});
 	}
 
@@ -322,6 +297,28 @@ $(document).ready(function() {
 });
 
 function display() {
+	if(testWords.length == 0){
+		var userRequestObj = {
+			text: "Brown Eyed Girl",
+			type: "getSong"
+		};
+		var userRequestJSON = JSON.stringify(userRequestObj);
+		$.post("/", userRequestJSON, function(data, status) {
+			console.log("data: " + data);
+			console.log("typeof: " + typeof data);
+			var responseObj = JSON.parse(data);
+			if(responseObj.text === "NOT FOUND"){
+				alert("File Not Found");
+				testWords = null;
+			}
+			else {
+				if (responseObj.wordArray) testWords = responseObj.wordArray;
+				display();
+				drawCanvas();
+				song = "Brown Eyed Girl";
+			}
+		});
+	}
 	var ctx = canvas.getContext('2d');
 	ctx.font = "20pt Arial";
 	var spaceWidth = ctx.measureText(" ").width;
