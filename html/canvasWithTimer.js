@@ -1,75 +1,3 @@
-/*
-   Javasript to handle mouse dragging and release
-   to drag a string around the html canvas
-   Keyboard arrow keys are used to move a moving box around
-
-   Here we are doing all the work with javascript and jQuery. (none of the words
-   are HTML, or DOM, elements. The only DOM element is just the canvas on which
-   where are drawing and a text field and button where the user can type data
-
-   This example shows examples of using JQuery
-   See the W3 Schools website to learn basic JQuery
-   JQuery syntax:
-   $(selector).action();
-   e.g.
-   $(this).hide() - hides the current element.
-   $("p").hide() - hides all <p> elements.
-   $(".test").hide() - hides all elements with class="test".
-   $("#test").hide() - hides the element with id="test".
-
-   Mouse event handlers are being added and removed using jQuery and
-   a jQuery event object is being passed to the handlers
-
-   Keyboard keyDown handler is being used to move a "moving box" around
-   Keyboard keyUP handler is used to trigger communication with the
-   server via POST message sending JSON data
-
- */
-
-//Use javascript array of objects to represent words and their locations
-// var words = [];
-// words.push({
-// 	word: "I",
-// 	x: 50,
-// 	y: 50
-// });
-// words.push({
-// 	word: "like",
-// 	x: 70,
-// 	y: 50
-// });
-// words.push({
-// 	word: "the",
-// 	x: 120,
-// 	y: 50
-// });
-// words.push({
-// 	word: "way",
-// 	x: 170,
-// 	y: 50
-// });
-// words.push({
-// 	word: "your",
-// 	x: 230,
-// 	y: 50
-// });
-// words.push({
-// 	word: "sparkling",
-// 	x: 300,
-// 	y: 50
-// });
-// words.push({
-// 	word: "earrings",
-// 	x: 430,
-// 	y: 50
-// });
-// words.push({
-// 	word: "lay",
-// 	x: 540,
-// 	y: 50
-// });
-
-
 var testWords = [];
 var timer;
 
@@ -121,7 +49,7 @@ var drawCanvas = function() {
 		//console.log(data.word);
 		// if (data.word.startsWith("["))
 		// {
-				
+
 		// context.fillText(data.word, data.x, data.y-20);
 		// context.strokeText(data.word, data.x, data.y-20);
 
@@ -187,7 +115,7 @@ function handleMouseMove(e) {
 		}
 		else
 			wordBeingMoved.y = Math.floor(wordBeingMoved.y / 50) * 50;
-	
+
 	if (movingChord)
 		wordBeingMoved.y -= 20;
 
@@ -329,7 +257,7 @@ function display() {
 	for (var i = 0; i < testWords.length; i++) {
 		var wordObj = testWords[i];
 		if (wordObj.word == "\n") {
-			
+
 			topPad += lineSplit;
 			leftPad = 0;
 //continue;
@@ -339,7 +267,7 @@ function display() {
 			wordObj.y = topPad - chordDisplace;
 		}
 		else wordObj.y = topPad;
-	 
+
 		if (wordObj.word != "\n")
 			leftPad = wordObj.x + ctx.measureText(wordObj.word).width;
 		else leftPad = wordObj.x;
@@ -355,7 +283,7 @@ function display() {
 
 function handleSave()
 {
-	
+
 	var userRequestObj = {
 			text: testWords,
 			type: "saveSong",
@@ -363,6 +291,6 @@ function handleSave()
 		};
 		console.log(testWords);
 	$.post("/", JSON.stringify(userRequestObj), function(data, status) {
-		
+
 	});
 }

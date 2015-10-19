@@ -1,7 +1,3 @@
-Team Members:
-Allan J Luke 100916046
-Abhinav Thukral 100871855
-
 Run Instructions:
 In the command line, run the server.js located in the root directory of the assignment
 
